@@ -7,15 +7,59 @@ st.set_page_config(page_title="US Stock Explorer", layout="wide")
 
 st.title("📈 US Stock Explorer")
 
+# ====================================
+# SESSION STATE (watchlist)
+# ====================================
 if "tickers" not in st.session_state:
-    st.session_state.tickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']
+    st.session_state.tickers = ["AAPL"]
 
-# -------------------------
-# ticker input
-# -------------------------
-symbol = st.text_input("Enter US Stock Ticker", "AAPL").upper()
 
-if symbol:
+# ====================================
+# ➕ ADD COMPANY UI
+# ====================================
+st.sidebar.header("➕ Add Company")
+
+new_ticker = st.sidebar.text_input(
+    "Enter US Stock Ticker",
+    placeholder="e.g., MSFT"
+)
+
+if st.sidebar.button("Add to Watchlist"):
+    if new_ticker:
+        ticker = new_ticker.upper().strip()
+
+        if ticker not in st.session_state.tickers:
+            st.session_state.tickers.append(ticker)
+            st.sidebar.success(f"{ticker} added!")
+            st.rerun()
+        else:
+            st.sidebar.warning("Ticker already exists")
+
+
+# ====================================
+# 📌 WATCHLIST DISPLAY
+# ====================================
+st.sidebar.subheader("📌 Watchlist")
+
+for t in st.session_state.tickers:
+    col1, col2 = st.sidebar.columns([3, 1])
+
+    with col1:
+        st.write(t)
+
+    with col2:
+        if st.button("❌", key=f"remove_{t}"):
+            st.session_state.tickers.remove(t)
+            st.rerun()
+
+
+# ====================================
+# 📊 MAIN DASHBOARD
+# ====================================
+for symbol in st.session_state.tickers:
+
+    st.divider()
+    st.header(f"📊 {symbol}")
 
     # =====================
     # QUOTE SECTION
@@ -32,7 +76,8 @@ if symbol:
         col3.metric("Day Low", f"${q['day_low']}")
 
     else:
-        st.error("No quote data found")
+        st.error(f"No quote data found for {symbol}")
+        continue
 
     # =====================
     # HISTORICAL CHART
@@ -53,8 +98,8 @@ if symbol:
 
         st.plotly_chart(fig, use_container_width=True)
 
-        with st.expander("Show raw data"):
+        with st.expander(f"Show raw data ({symbol})"):
             st.dataframe(df)
 
     else:
-        st.warning("No historical data found")
+        st.warning(f"No historical data found for {symbol}")
