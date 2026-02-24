@@ -7,6 +7,9 @@ st.set_page_config(page_title="US Stock Explorer", layout="wide")
 
 st.title("📈 US Stock Explorer")
 
+if "tickers" not in st.session_state:
+    st.session_state.tickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']
+
 # -------------------------
 # ticker input
 # -------------------------
